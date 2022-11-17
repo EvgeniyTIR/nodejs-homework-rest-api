@@ -18,7 +18,9 @@ const validation = (req, res, next) => {
 			.phoneNumber()
 			.min(7)
 			.max(20)
+			.required()
 			.messages({ "any.required": `missing required phone field` }),
+		favorite: Joi.boolean().optional(),
 	});
 	const result = schema.validate(req.body);
 	if (result.error) {
@@ -33,17 +35,34 @@ const validationPUT = (req, res, next) => {
 			.pattern(/^\s*\w+(?:[^\w,]+\w+)*[^,\w]*$/)
 			.min(3)
 			.max(20)
-			.optional(),
+			.required()
+			.messages({ "object.length": `missing field` }),
 		email: Joi.string()
 			.email({
 				minDomainSegments: 2,
 				tlds: { allow: ["com", "net"] },
 			})
-			.optional(),
+			.required()
+			.messages({ "object.length": `missing field` }),
 		phone: customJoi.string().phoneNumber().min(7).max(20).optional(),
-	})
-		.length(3)
-		.messages({ "object.length": `missing field` });
+		favorite: Joi.boolean()
+			.required()
+			.messages({ "any.required": "missing field favorite" }),
+	});
+	const result = schema.validate(req.body);
+	if (result.error) {
+		return res.status(400).json({ message: result.error.message });
+	}
+
+	next();
+};
+const validationFavorite = (req, res, next) => {
+	const schema = Joi.object({
+		favorite: Joi.boolean()
+			.required()
+			.messages({ "any.required": "missing field favorite" }),
+	});
+
 	const result = schema.validate(req.body);
 	if (result.error) {
 		return res.status(400).json({ message: result.error.message });
@@ -55,4 +74,5 @@ const validationPUT = (req, res, next) => {
 module.exports = {
 	validation,
 	validationPUT,
+	validationFavorite,
 };
