@@ -6,7 +6,7 @@ const start = async () => {
 	await connectMongo();
 };
 
-app.listen(PORT, () => {
+app.listen(PORT || 3000, () => {
 	start();
 	console.log(`Server running. Use our API on port: ${PORT}`);
 });
