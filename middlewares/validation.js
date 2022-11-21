@@ -46,9 +46,7 @@ const validationPUT = (req, res, next) => {
 			.required()
 			.messages({ "object.length": `missing field` }),
 		phone: customJoi.string().phoneNumber().min(7).max(20).optional(),
-		favorite: Joi.boolean()
-			.required()
-			.messages({ "any.required": "missing field favorite" }),
+		favorite: Joi.boolean(),
 	});
 	const result = schema.validate(req.body);
 	if (result.error) {
@@ -80,10 +78,7 @@ const loginValidation = (req, res, next) => {
 				tlds: { allow: ["com", "net", "ua"] },
 			})
 			.required(),
-		password: Joi.string()
-			.regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
-			.messages({ "string.pattern.base": "Password must be strong" })
-			.required(),
+		password: Joi.string().min(4).required(),
 	});
 
 	const result = schema.validate(req.body);

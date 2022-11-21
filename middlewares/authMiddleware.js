@@ -5,17 +5,9 @@ const { SECRET } = require("../helpers/envImport");
 
 const authMiddlware = async (req, res, next) => {
 	try {
-		const { authorization } = req.headers;
-		if (!authorization) {
-			next(
-				new LoginAuthError(
-					"Please,provide a token in request authorization header"
-				)
-			);
-		}
 		const [tokenType, token] = authorization.split(" ");
 		if (!token) {
-			next(new LoginAuthError("Please,provide a token"));
+			next(new LoginAuthError("Not authorized"));
 		}
 
 		const user = jwt.decode(token, SECRET);
