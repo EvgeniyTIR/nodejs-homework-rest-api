@@ -45,11 +45,27 @@ const loginController = async (req, res, next) => {
 };
 
 const logoutController = async (req, res, next) => {
-	const { user } = req;
+	const { _id } = req.user;
 
-	await User.findByIdAndUpdate(user._id, { token: null });
+	await User.findByIdAndUpdate(_id, { token: null });
 
-	return res.status(204).json({ message: "No Content" });
+	res.status(204).json({ message: "No Content" });
+};
+const getCurrentUserController = async (req, res, next) => {
+	const { _id } = req.user;
+
+	const currentUser = await User.findById(_id).select({
+		email: 1,
+		subscription: 1,
+		_id: 0,
+	});
+
+	return res.status(200).json(currentUser);
 };
 
-module.exports = { registrationController, loginController, logoutController };
+module.exports = {
+	registrationController,
+	loginController,
+	logoutController,
+	getCurrentUserController,
+};

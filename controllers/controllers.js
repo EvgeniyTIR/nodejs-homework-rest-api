@@ -2,12 +2,13 @@ const { Contacts } = require("../models/contactSchema");
 
 const listContactsController = async (req, res) => {
 	const { _id } = req.user;
-	const { skip = 0, limit = 5 } = req.query;
+	const { page = 1, limit = 5 } = req.query;
+	const skip = (page - 1) * limit;
 	const contact = await Contacts.find({ owner: _id })
 		.select({ __v: 0 })
 		.skip(parseInt(skip))
 		.limit(parseInt(limit));
-	res.json({ contact, skip, limit });
+	res.json({ contact, page, limit });
 };
 const getContactByIdController = async (req, res) => {
 	const { contactId } = req.params;
