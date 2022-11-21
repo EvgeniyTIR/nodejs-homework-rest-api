@@ -1,3 +1,4 @@
+const { required } = require("joi");
 const Joi = require("joi");
 const customJoi = Joi.extend(require("joi-ext-phonenumber"));
 
@@ -10,7 +11,7 @@ const validation = (req, res, next) => {
 			.required()
 			.messages({ "any.required": `missing required name field` }),
 		email: Joi.string()
-			.email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+			.email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "ua"] } })
 			.required()
 			.messages({ "any.required": `missing required email field` }),
 		phone: customJoi
@@ -40,7 +41,7 @@ const validationPUT = (req, res, next) => {
 		email: Joi.string()
 			.email({
 				minDomainSegments: 2,
-				tlds: { allow: ["com", "net"] },
+				tlds: { allow: ["com", "net", "ua"] },
 			})
 			.required()
 			.messages({ "object.length": `missing field` }),
@@ -71,8 +72,31 @@ const validationFavorite = (req, res, next) => {
 	next();
 };
 
+const loginValidation = (req, res, next) => {
+	const schema = Joi.object({
+		email: Joi.string()
+			.email({
+				minDomainSegments: 2,
+				tlds: { allow: ["com", "net", "ua"] },
+			})
+			.required(),
+		password: Joi.string()
+			.regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
+			.messages({ "string.pattern.base": "Password must be strong" })
+			.required(),
+	});
+
+	const result = schema.validate(req.body);
+	if (result.error) {
+		return res.status(400).json({ message: result.error.message });
+	}
+
+	next();
+};
+
 module.exports = {
 	validation,
 	validationPUT,
 	validationFavorite,
+	loginValidation,
 };

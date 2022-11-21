@@ -22,7 +22,23 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-	res.status(500).json({ message: err.message });
+	console.error(`app error: ${err.message} ${err.name}`);
+
+	if (err.name === "ValidationError") {
+		return res.status(400).json({
+			message: err.message,
+		});
+	}
+
+	if (err.status) {
+		return res.status(err.status).json({
+			message: err.message,
+		});
+	}
+
+	return res.status(500).json({
+		message: `Internal server error ${err.message}`,
+	});
 });
 
 module.exports = app;
