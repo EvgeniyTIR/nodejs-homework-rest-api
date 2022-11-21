@@ -44,4 +44,12 @@ const loginController = async (req, res, next) => {
 	});
 };
 
-module.exports = { registrationController, loginController };
+const logoutController = async (req, res, next) => {
+	const { user } = req;
+
+	await User.findByIdAndUpdate(user._id, { token: null });
+
+	return res.status(204).json({ message: "No Content" });
+};
+
+module.exports = { registrationController, loginController, logoutController };
