@@ -1,4 +1,5 @@
 const express = require("express");
+const { authMiddlware } = require("../../middlewares/authMiddleware");
 const {
 	listContactsController,
 	getContactByIdController,
@@ -18,16 +19,13 @@ const { asyncWrapper } = require("../../helpers/errWrapper");
 
 const router = express.Router();
 
+router.use(authMiddlware);
+
 router.get("/", asyncWrapper(listContactsController));
-
 router.get("/:contactId", asyncWrapper(getContactByIdController));
-
 router.post("/", validation, asyncWrapper(addContactController));
-
 router.delete("/:contactId", asyncWrapper(removeContactController));
-
 router.put("/:contactId", validationPUT, asyncWrapper(updateContactController));
-
 router.patch(
 	"/:contactId/favorite",
 	validationFavorite,

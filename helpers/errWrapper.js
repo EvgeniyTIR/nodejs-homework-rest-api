@@ -4,4 +4,11 @@ const asyncWrapper = (controller) => {
 	};
 };
 
-module.exports = { asyncWrapper };
+class LoginAuthError extends Error {
+	constructor(message) {
+		super(message);
+		this.status = 401;
+	}
+}
+
+module.exports = { asyncWrapper, LoginAuthError };
