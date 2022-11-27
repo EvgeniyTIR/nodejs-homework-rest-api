@@ -1,5 +1,4 @@
 const Jimp = require("jimp");
-const fs = require("fs/promises");
 const path = require("path");
 const { User } = require("../models/usersSchema");
 
@@ -15,7 +14,7 @@ const updateAvatarsControler = async (req, res, next) => {
 			.write(path.resolve(`./public/avatars/${filename}`));
 	});
 
-	const avatarURL = `avatars/${filename}`;
+	const avatarURL = `/avatars/${filename}`;
 
 	const updatedUserAvatar = await User.findByIdAndUpdate(
 		_id,
