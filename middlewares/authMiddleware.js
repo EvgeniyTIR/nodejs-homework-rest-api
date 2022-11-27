@@ -5,6 +5,7 @@ const { SECRET } = require("../helpers/envImport");
 
 const authMiddlware = async (req, res, next) => {
 	try {
+		const { authorization } = req.headers;
 		const [tokenType, token] = authorization.split(" ");
 		if (!token) {
 			next(new LoginAuthError("Not authorized"));
