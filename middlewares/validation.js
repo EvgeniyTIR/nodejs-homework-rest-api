@@ -1,4 +1,3 @@
-const { required } = require("joi");
 const Joi = require("joi");
 const customJoi = Joi.extend(require("joi-ext-phonenumber"));
 
