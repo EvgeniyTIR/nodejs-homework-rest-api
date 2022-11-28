@@ -1,14 +1,37 @@
 const { User } = require("../models/usersSchema");
+const { Conflict, Unauthorized, NotFound } = require("http-errors");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
+const uuid = require("react-uuid");
+
 const { SECRET } = require("../helpers/envImport");
-const { Conflict, Unauthorized } = require("http-errors");
+const { SENDGRID_API_KEY } = require("../helpers/envImport");
+const { PORT } = require("../helpers/envImport");
+
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 const registrationController = async (req, res, next) => {
 	const { email, password } = req.body;
-	const user = new User({ email, password });
+
+	const verificationToken = uuid();
+	const user = new User({
+		email,
+		password,
+		verificationToken,
+	});
+
 	try {
 		await user.save();
+		const msg = {
+			to: user.email, // Change to your recipient
+			from: "tirairdrop@gmail.com", // Change to your verified sender
+			subject: "Thank you for registration",
+			text: "Please verify your email address",
+			html: `Please <a href="http://localhost:${PORT}/api/users/verify/${verificationToken}">verify</a> your email address`,
+		};
+		await sgMail.send(msg);
 	} catch (error) {
 		if (error.message.includes("duplicate key error collection")) {
 			throw new Conflict("Email in use");
@@ -24,11 +47,14 @@ const registrationController = async (req, res, next) => {
 		},
 	});
 };
+
 const loginController = async (req, res, next) => {
 	const { email, password } = req.body;
-	const user = await User.findOne({ email });
+	const user = await User.findOne({ email, verify: true });
 	if (!user) {
-		throw new Unauthorized(`No user whith ${email} found`);
+		throw new Unauthorized(
+			`No user whith ${email} found or email not avtorised`
+		);
 	}
 	if (!(await bcrypt.compare(password, user.password))) {
 		throw new Unauthorized(`Email or password is wrong`);
@@ -63,9 +89,41 @@ const getCurrentUserController = async (req, res, next) => {
 	return res.status(200).json(currentUser);
 };
 
+const emailVerifyController = async (req, res, next) => {
+	const { verificationToken } = req.params;
+
+	const user = await User.findOne({ verificationToken });
+
+	if (user === null) {
+		throw new NotFound("User already avtorized");
+	}
+	if (!user && user !== null) {
+		throw new NotFound("User not found");
+	}
+
+	await User.findByIdAndUpdate(user._id, {
+		verify: true,
+		verificationToken: null,
+	});
+
+	const msg = {
+		to: user.email,
+		from: "tirairdrop@gmail.com",
+		subject: "Thank you for verification",
+		text: "Verification successful",
+		html: "Verification successful",
+	};
+	await sgMail.send(msg);
+
+	return res.json({
+		message: "Verification successful",
+	});
+};
+
 module.exports = {
 	registrationController,
 	loginController,
 	logoutController,
 	getCurrentUserController,
+	emailVerifyController,
 };
