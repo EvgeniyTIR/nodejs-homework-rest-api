@@ -77,6 +77,7 @@ const logoutController = async (req, res, next) => {
 
 	res.status(204).json({ message: "No Content" });
 };
+
 const getCurrentUserController = async (req, res, next) => {
 	const { _id } = req.user;
 
@@ -120,10 +121,41 @@ const emailVerifyController = async (req, res, next) => {
 	});
 };
 
+const repitVerifyMail = async (req, res, next) => {
+	const { email } = req.body;
+
+	const user = await User.findOne({ email, verify: false });
+	const alreadyVerifedUser = await User.findOne({ email, verify: true });
+
+	if (!user && alreadyVerifedUser) {
+		return res
+			.status(400)
+			.json({ message: "Verification has already been passed" });
+	}
+
+	if (!user && !alreadyVerifedUser) {
+		throw new NotFound("User not found");
+	}
+
+	const msg = {
+		to: user.email,
+		from: "tirairdrop@gmail.com",
+		subject: "Thank you for registration",
+		text: "Please verify your email address",
+		html: `Please <a href="http://localhost:${PORT}/api/users/verify/${user.verificationToken}">verify</a> your email address`,
+	};
+	await sgMail.send(msg);
+
+	return res.json({
+		message: "Check you email, verification messege already send",
+	});
+};
+
 module.exports = {
 	registrationController,
 	loginController,
 	logoutController,
 	getCurrentUserController,
 	emailVerifyController,
+	repitVerifyMail,
 };
