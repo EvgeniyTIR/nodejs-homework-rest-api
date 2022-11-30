@@ -37,7 +37,7 @@ const addContactController = async (req, res) => {
 	const { _id } = req.user;
 	const contact = new Contacts({ owner: _id, ...req.body });
 	const newContact = await contact.save();
-	res.json.status(201)(newContact);
+	res.status(201).json(newContact);
 };
 const updateContactController = async (req, res) => {
 	const { _id } = req.user;
