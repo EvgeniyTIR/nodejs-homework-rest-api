@@ -88,9 +88,28 @@ const loginValidation = (req, res, next) => {
 	next();
 };
 
+const emailValidation = (req, res, next) => {
+	const schema = Joi.object({
+		email: Joi.string()
+			.email({
+				minDomainSegments: 2,
+				tlds: { allow: ["com", "net", "ua"] },
+			})
+			.required(),
+	});
+
+	const result = schema.validate(req.body);
+	if (result.error) {
+		return res.status(400).json({ message: "missing required field email" });
+	}
+
+	next();
+};
+
 module.exports = {
 	validation,
 	validationPUT,
 	validationFavorite,
 	loginValidation,
+	emailValidation,
 };
